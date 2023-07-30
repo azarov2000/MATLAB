@@ -1,0 +1,49 @@
+function Right_part = solver(t,X,A0,A1,A2,G,N,R,m)
+
+h = 1/m;
+M = zeros(m-1);
+
+for i=1:length(M)
+    for j=1:length(M)
+        
+        if i==j
+            M(i,j) = -2;
+        end
+        if i == j-1 || j == i-1 
+            M(i,j) = 1;
+        end 
+        
+    end 
+end
+M = (1/2*h)^2*M;
+M = kron(M,eye(2));
+
+%% Заполнение
+ksi = M*X(1:2*(m-1));
+ksi_dot = M*X(2*(m-1)+1:4*(m-1));
+I = eye(m-1);
+
+%%
+% f_NL = (ksi_dot)' * ksi_dot - 2*N*(ksi_dot)' * kron(I,R) * ksi + N^2 * (ksi)' * ksi;
+% F = f_NL * (-ksi_dot + N * ksi);
+
+for i=1:m-1
+    ksi_local = ksi(2*i-1:2*i);
+    ksi_dot_local = ksi_dot(2*i-1:2*i);
+    f_NL(i) = (ksi_dot_local)' * ksi_dot_local - 2*N*(ksi_dot_local)' * R * ksi_local + N^2 * (ksi_local)' * ksi_local;
+%     i
+%     2*(m-1)+2*i-1
+%     2*(m-1)+2*i
+%     ksi_dot_local = ksi_dot_local(i+)
+%     f_NL(i) = (ksi_dot)' * ksi_dot - 2*N*(ksi_dot)' * R * ksi + N^2 * (ksi)' * ksi
+end 
+
+f_NL = kron(f_NL',ones(2,1));
+    
+F = f_
+
+MatrKoeff = [zeros(length(A0)) , eye(length(A0)); -A2\A0, -A2\A1]; % матрица коэффициентов
+SvobVector = [zeros((length(A0)),1);A2\(G*F)]; % свободный вектор
+
+Right_part = MatrKoeff*X+SvobVector;
+end
