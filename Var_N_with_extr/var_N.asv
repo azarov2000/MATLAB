@@ -42,7 +42,7 @@ Ncritical = get_N_crit (N_start,step_N,data);
 
 
 %% %%% Solver Settings
-T=[0,200];                       % the interval of the full study
+T=[0,300];                       % the interval of the full study
 opt=odeset('AbsTol',1e-6,'RelTol',1e-6);
 x0 = zeros(2*(2*(m-1)),1); % vector of initial conditions
 % Node number from 1 to (m-1)
@@ -52,33 +52,39 @@ x0(number_node+3) = 0.00005;
 
 %% %%% Get solve
 dN = -0.1;
-% N_v = 24.5:dN:Ncritical+0.1;
-N_v = 24.5:dN:24.3;
+N_v = 24.5:dN:Ncritical+0.1;
 end_time_ind = 20;
 
 N_vector = [];
 Amplitude = [];
 T_end_vector = [];
 
+% for i=1:length(N_v)
+%     N_v(i)
+%    data.A0 = kron(I,(E-2*zeta_V*N_v(i)*R));
+%    data.A1 = 2*zeta_V*kron(I,E)+2*zeta_e*kron(G00Int,E);
+%    data.A2 = mu_R*kron(G00Int,E);
+%    data.N = N_v(i);
+%    [time,X] = SOLVE(data,T,x0,opt);
+%    [ksi_X_node] = get_KSI_X(X,number_node,m);
+%    N_vector(i) = N_v(i);
+%    Amplitude(i) = max(ksi_X_node);
+%    index = find(time>=time(end)-end_time_ind);
+%    [~,Extr_x] = ext(time(index),ksi_X_node(index));
+%    Extremum{i} = Extr_x;
+% 
+%    clear t X ksi_X_node Extr_x
+% end
 i = 1;
-T_local = T;
-
-h = waitbar(0, 'Выполнение цикла...');
-progressStep = 1;  % шаг обновления бара
 while i<=length(N_v)
-    
-    totalIterations = length(N_v);
-    if mod(i, progressStep) == 0
-        progress = i / totalIterations;
-        waitbar(progress, h, sprintf('Выполнение цикла... %d%%', round(progress * 100)));
-    end
-
     N_v(i)
+    T_end = T(end);
+    
    data.A0 = kron(I,(E-2*zeta_V*N_v(i)*R));
    data.A1 = 2*zeta_V*kron(I,E)+2*zeta_e*kron(G00Int,E);
    data.A2 = mu_R*kron(G00Int,E);
    data.N = N_v(i);
-   [time,X] = SOLVE(data,T_local,x0,opt);
+   [time,X] = SOLVE(data,T,x0,opt);
    [ksi_X_node] = get_KSI_X(X,number_node,m);
    N_vector(i) = N_v(i);
    Amplitude(i) = max(ksi_X_node);
@@ -87,12 +93,8 @@ while i<=length(N_v)
    Extremum{i} = Extr_x;
    
    index_pls_Extr = find(Extr_x>=0);
-   if max(Extr_x(index_pls_Extr)) - min(Extr_x(index_pls_Extr)) < 0.0025
-        T_end_vector(i) = T_local(end);
-        i = i + 1;
-        T_local = T;
-   else
-       T_local(end) = T_local(end) + 50; 
+   if max(Extr_x(index_pls_Extr)) - min(Extr_x(index_pls_Extr)) <= 0.0025
+        
    end 
    
    clear t X ksi_X_node Extr_x
